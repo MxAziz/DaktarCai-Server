@@ -2,7 +2,6 @@ import express, { Application, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFound from './app/middlewares/notFound';
-import { uptime } from 'process';
 
 const app: Application = express();
 app.use(cors({
