@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User{
+  id String @id @default(uuid())
+  email String @unique
+  password String
+  role UserRole
+  needPasswordChange Boolean @default(false)
+  status UserStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  admin Admin?
+  doctor Doctor?
+  patient Patient?
+
+  @@map("users")
+}
+
+model Admin {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  profilePicture String?
+  contactNumber String
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(references: [email], fields: [email])
+
+  @@map("admins")
+}
+
+model Doctor {
+  id String @id @default(uuid())
+  email String @unique
+  name String
+  profilePicture String?
+  contactNumber String
+  address String
+  experience          Int                 @default(0)
+  gender              Gender
+  appointmentFee      Int
+  qualification       String
+  currentWorkingPlace String
+  designation         String
+  isDeleted           Boolean             @default(false)
+  averageRating       Float               @default(0.0)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  user User @relation(references: [email], fields: [email])
+
+  @@map("doctors")
+}
+
+model Patient {
+  id String @id @default(uuid())
+  email String @unique
+  name String
+  profilePicture String?
+  contactNumber String
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(references: [email], fields: [email])
+
+  @@map("patients")
+}
+
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
