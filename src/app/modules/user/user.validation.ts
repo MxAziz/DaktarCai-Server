@@ -12,3 +12,7 @@ const createPatientValidationSchema = z.object({
         address: z.string().optional(),
     }
 })
+
+export const userValidation = {
+    createPatientValidationSchema,
+}
