@@ -1,25 +1,29 @@
 import bcrypt from "bcryptjs";
-import { createPatientInput } from "./user.interface";
 import { prisma } from "../../shared/prisma";
+import { Request } from "express";
+import { fileUploader } from "../../helper/fileUploader";
 
-const createPatient = async(payload: createPatientInput) => {
-    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS ?? '10', 10);
-    const hashPassword = await bcrypt.hash(payload.password, saltRounds);
+const createPatient = async(req: Request) => {
 
-    const result = await prisma.$transaction(async (tnx: { user: { create: (arg0: { data: { email: string; password: string; }; }) => any; }; patient: { create: (arg0: { data: { name: string; email: string; }; }) => any; }; }) => {
+    if (req.file) {
+        const uploadedResult = await fileUploader.uploadToCloudinary(req.file);
+        req.body.patient.profilePicture = uploadedResult?.secure_url;
+    }
+
+    const hashPassword = await bcrypt.hash(req.body.password, 10);
+
+    const result = await prisma.$transaction(async (tnx) => {
         await tnx.user.create({
             data: {
-                email: payload.email,
+                email: req.body.patient.email,
                 password: hashPassword,
+                role: req.body.patient.role ?? "PATIENT",
             }
         })
 
         return await tnx.patient.create({
-            data: {
-                name: payload.name,
-                email: payload.email,
-            }
-        })
+          data: req.body.patient,
+        });
     })
 
     return result;
