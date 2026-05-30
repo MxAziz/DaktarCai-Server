@@ -26,7 +26,7 @@ const uploadToCloudinary = async(file: Express.Multer.File) => {
     // Upload an image
      const uploadResult = await cloudinary.uploader
        .upload(file.path, {
-         public_id: `daktar-cai/${file.filename}`,
+         public_id: `${file.originalname}-${Date.now()}`,
        })
        .catch((error) => {
          console.log(error);

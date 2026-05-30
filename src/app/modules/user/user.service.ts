@@ -2,8 +2,9 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../../shared/prisma";
 import { Request } from "express";
 import { fileUploader } from "../../helper/fileUploader";
+import { Patient, UserRole } from "@prisma/client";
 
-const createPatient = async(req: Request) => {
+const createPatient = async(req: Request): Promise<Patient> => {
 
     if (req.file) {
         const uploadedResult = await fileUploader.uploadToCloudinary(req.file);
@@ -17,7 +18,9 @@ const createPatient = async(req: Request) => {
             data: {
                 email: req.body.patient.email,
                 password: hashPassword,
-                role: req.body.patient.role ?? "PATIENT",
+                // role: req.body.patient.role ?? "PATIENT",
+                role: UserRole.PATIENT,
+                needPasswordChange: false,
             }
         })
 
