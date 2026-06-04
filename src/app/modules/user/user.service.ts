@@ -32,6 +32,12 @@ const createPatient = async(req: Request): Promise<Patient> => {
     return result;
 }
 
+const getAllFromDB = async ({page, limit}: {page: number, limit: number}) => {
+    const result = await prisma.user.findMany();
+    return result;
+}
+
 export const UserService = {
     createPatient,
+    getAllFromDB,
 }

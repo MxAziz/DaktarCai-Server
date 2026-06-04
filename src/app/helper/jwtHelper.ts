@@ -1,3 +1,18 @@
-const token = async (payload: object, secret: string, options?: object) => {
+import jwt, { Secret, SignOptions } from "jsonwebtoken";
 
-}
+const generateToken = async (
+  payload: any,
+  secret: Secret,
+  expiresIn: string,
+) => {
+  const token = jwt.sign(payload, secret, {
+    algorithm: "HS256",
+    expiresIn,
+  } as SignOptions);
+
+  return token;
+};
+
+export const jwtHelper = {
+  generateToken,
+};

@@ -1,7 +1,7 @@
 import { UserStatus } from '@prisma/client';
 import { prisma } from '../../shared/prisma';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { jwtHelper } from '../../helper/jwtHelper';
 
 
 const login = async (payload: { email: string, password: string }) => {
@@ -17,24 +17,26 @@ const login = async (payload: { email: string, password: string }) => {
         throw new Error('Password is incorrect');
     }
 
-    const accessToken = jwt.sign(
+    const accessToken = jwtHelper.generateToken (
         { email: user.email, role: user.role },
         "abcde",
-        { algorithm: "HS256", expiresIn: "1h" },
+        "1h"
     );
 
-    const refreshToken = jwt.sign(
+    const refreshToken = jwtHelper.generateToken(
         { email: user.email, role: user.role },
         "abcde",
-        { algorithm: "HS256", expiresIn: "30d" },
+        "30d"
     );
 
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+      needPasswordChange: user.needPasswordChange,
+    };
 
 };
 
 export const AuthService = {
     login,
 };
-
-    // "dev": "tsx watch ./src/server.ts",
