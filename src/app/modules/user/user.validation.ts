@@ -1,23 +1,34 @@
-import z from "zod";
+// import { z } from "zod";
 
 // const createPatient = z.object({
-//     password: z.string(),
-//     patient: z.object({
-//         name: z.string().nonempty("name is required"),
-//         email: z.string().nonempty("email is required"),
-//         address: z.string().optional(),
-//     })
-// })
+//   password: z.string(),
+//   patient: z.object({
+//     email: z.string().email(),
+//     name: z.string().min(1, "Name is required!"),
+//     contactNumber: z.string().optional(),
+//     address: z.string().optional(),
+//   }),
+// });
+
+// export const userValidation = {
+//   createPatient,
+// };
+
+import { z } from "zod";
+
 const createPatient = z.object({
   password: z.string(),
   patient: z.object({
-    email: z.email(),
-    name: z.string({ error: "Name is required!", }),
-    contactNumber: z .string({ error: "Contact number is required!", }) .optional(),
-    // address: z .string({ error: "Address is required", }) .optional(),
+    email: z.string().refine(
+      (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+      { message: "Invalid email address" }
+    ),
+    name: z.string().min(1, "Name is required!"),
+    contactNumber: z.string().optional(),
+    address: z.string().optional(),
   }),
 });
 
 export const userValidation = {
-    createPatient,
-}
+  createPatient,
+};
