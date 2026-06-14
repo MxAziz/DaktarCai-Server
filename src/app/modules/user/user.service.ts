@@ -34,6 +34,62 @@ const createPatient = async(req: Request): Promise<Patient> => {
     return result;
 }
 
+const createAdmin = async(req: Request): Promise<Patient> => {
+
+    if (req.file) {
+        const uploadedResult = await fileUploader.uploadToCloudinary(req.file);
+        req.body.patient.profilePicture = uploadedResult?.secure_url;
+    }
+
+    const hashPassword = await bcrypt.hash(req.body.password, 10);
+
+    const result = await prisma.$transaction(async (tnx) => {
+        await tnx.user.create({
+            data: {
+                email: req.body.admin.email,
+                password: hashPassword,
+                // role: req.body.patient.role ?? "PATIENT",
+                role: UserRole.ADMIN,
+                needPasswordChange: false,
+            }
+        })
+
+        return await tnx.admin.create({
+          data: req.body.admin,
+        });
+    })
+
+    return result;
+}
+
+const createDoctor = async(req: Request): Promise<Patient> => {
+
+    if (req.file) {
+        const uploadedResult = await fileUploader.uploadToCloudinary(req.file);
+        req.body.doctor.profilePicture = uploadedResult?.secure_url;
+    }
+
+    const hashPassword = await bcrypt.hash(req.body.password, 10);
+
+    const result = await prisma.$transaction(async (tnx) => {
+        await tnx.user.create({
+            data: {
+                email: req.body.doctor.email,
+                password: hashPassword,
+                // role: req.body.patient.role ?? "PATIENT",
+                role: UserRole.DOCTOR,
+                needPasswordChange: false,
+            }
+        })
+
+        return await tnx.doctor.create({
+          data: req.body.doctor,
+        });
+    })
+
+    return result;
+}
+
 // const getAllFromD = async ({page, limit, searchTerm, sortBy, sortOrder}: {page: number, limit: number, searchTerm?: any, sortBy: any, sortOrder: any}) => {
 //     const pageNumber = page || 1;
 //     const limitNumber = limit || 10;
@@ -60,52 +116,68 @@ const createPatient = async(req: Request): Promise<Patient> => {
 
 const getAllFromDB = async (params: any, options: any) => {
 
-    const { page, limit, skip, sortBy, sortOrder } =
-      paginationHelper.calculatePagination(options);
-    const { searchTerm, ...filterData } = params;
+  const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options);
+  const { searchTerm, ...filterData } = params;
 
-    const andConditions: Prisma.UserWhereInput[] = [];
+  const andConditions: Prisma.UserWhereInput[] = [];
 
-    if (searchTerm) {
-      andConditions.push({
-        OR: userSearchableFields.map((field) => ({
-          [field]: {
-            contains: searchTerm,
-            mode: "insensitive",
-          },
-        })),
-      });
-    }
-
-    if (Object.keys(filterData).length > 0) {
-      andConditions.push({
-        AND: Object.keys(filterData).map((key) => ({
-          [key]: {
-            equals: (filterData as any)[key],
-          },
-        })),
-      });
-    }
-
-  const whereOptions: Prisma.UserWhereInput[] = [];
-
-    const result = await prisma.user.findMany({
-      skip,
-      take: limit,
-
-      where: {
-        AND:andConditions
-      },
-
-      orderBy: {
-        [sortBy]: sortOrder,
-      },
+  if (searchTerm) {
+    andConditions.push({
+      OR: userSearchableFields.map((field) => ({
+        [field]: {
+          contains: searchTerm,
+          mode: "insensitive",
+        },
+      })),
     });
+  }
 
-    return result;
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+
+  const whereConditions: Prisma.UserWhereInput =
+    andConditions.length > 0
+      ? {
+        AND: andConditions,
+      }
+      : {};
+
+
+  const result = await prisma.user.findMany({
+    skip,
+    take: limit,
+
+    where: whereConditions,
+
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+  });
+
+  const total = await prisma.user.count({
+    where: whereConditions
+  })
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result
+  };
 }
 
 export const UserService = {
     createPatient,
+    createAdmin,
+    createDoctor,
     getAllFromDB,
 }
