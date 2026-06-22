@@ -116,8 +116,8 @@ const createDoctor = async(req: Request): Promise<Patient> => {
 
 const getAllFromDB = async (params: any, options: any) => {
 
-  const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options);
-  const { searchTerm, ...filterData } = params;
+  const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options); // pagination and sorting calculation
+  const { searchTerm, ...filterData } = params; // searchTerm separate from filter data
 
   const andConditions: Prisma.UserWhereInput[] = [];
 
