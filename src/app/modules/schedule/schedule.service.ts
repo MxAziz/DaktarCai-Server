@@ -1,6 +1,9 @@
 
 const insertIntoDB = async (payload: any) => {
-    console.log({ payload });
+    const { startTime, endTime, startDate, endDate } = payload;
+    const intervalTime = 30; // Interval time in minutes
+    const currentDate = new Date(startDate);
+    const endDateObj = new Date(endDate);
     return payload;
 }
 
